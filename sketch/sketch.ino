@@ -16,7 +16,8 @@ const int pollingIntervalSec = 30;
 
 // サーボモーターの情報
 const int servoPin   = 12;
-const int servoDelay = 50;
+const int servoDelay = 30;
+const int repeatCount = 5;
 Servo servo;
 
 
@@ -44,7 +45,7 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   servo.attach(servoPin);
-  servo.write(0);
+  servo.write(90);
 }
 
 int value = 0;
@@ -102,8 +103,18 @@ void loop() {
     if (!wasNotified) {
       Serial.println("The meeting will soon be over!");
       wasNotified = true;
-      // 0度から90度まで1度ずつサーボモーターを回転
-      for (int angle = 0; angle <= 90; angle++) {
+      // サーボモーターを回転させてハトを出す x10
+      for (int i = 0; i < repeatCount; i++) {
+        for (int angle = 90; angle >= 20; angle--) {
+          servo.write(angle);
+          delay(servoDelay);
+        }
+        for (int angle = 20; angle <= 90; angle++) {
+          servo.write(angle);
+          delay(servoDelay);
+        }
+      }
+      for (int angle = 90; angle >= 20; angle--) {
         servo.write(angle);
         delay(servoDelay);
       }
@@ -112,8 +123,8 @@ void loop() {
     if (wasNotified) {
       Serial.println("The meeting has been over!");
       wasNotified = false;
-      // 90度から0度まで1度ずつサーボモーターを回転
-      for (int angle = 90; angle >= 0; angle--) {
+      // サーボモーターを回転させてハトを帰す
+      for (int angle = 20; angle <= 90; angle++) {
         servo.write(angle);
         delay(servoDelay);
       }
