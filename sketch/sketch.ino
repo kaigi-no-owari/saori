@@ -1,17 +1,24 @@
 #include <ESP8266WiFi.h>
+#include <Servo.h>
 
-// Information about Wi-Fi access point
+// Wi-Fiアクセスポイントの情報
 
 const char* ssid     = "SSID is required";
 const char* password = "PASS is required";
 
-// Information about API endpoint
+// APIエンドポイントの情報
 
 const char* host     = "API server hostname is required";
 const int port       = 80;
 const char* roomid   = "ROOM ID is required";
 const String url     = String("/api/meetings/") + roomid + "/pow";
 const int pollingIntervalSec = 30;
+
+// サーボモーターの情報
+const int servoPin   = 12;
+const int servoDelay = 30;
+const int repeatCount = 5;
+Servo servo;
 
 
 void setup() {
@@ -36,9 +43,13 @@ void setup() {
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+
+  servo.attach(servoPin);
+  servo.write(90);
 }
 
 int value = 0;
+boolean wasNotified = false;
 
 void loop() {
   delay(pollingIntervalSec * 1000);
@@ -89,8 +100,35 @@ void loop() {
   Serial.println("==========");
 
   if (line.startsWith("{\"notification\":true}")) {
-    Serial.println("The meeting will soon be over!");
+    if (!wasNotified) {
+      Serial.println("The meeting will soon be over!");
+      wasNotified = true;
+      // サーボモーターを回転させてハトを出す x10
+      for (int i = 0; i < repeatCount; i++) {
+        for (int angle = 90; angle >= 20; angle--) {
+          servo.write(angle);
+          delay(servoDelay);
+        }
+        for (int angle = 20; angle <= 90; angle++) {
+          servo.write(angle);
+          delay(servoDelay);
+        }
+      }
+      for (int angle = 90; angle >= 20; angle--) {
+        servo.write(angle);
+        delay(servoDelay);
+      }
+    }
   } else {
+    if (wasNotified) {
+      Serial.println("The meeting has been over!");
+      wasNotified = false;
+      // サーボモーターを回転させてハトを帰す
+      for (int angle = 20; angle <= 90; angle++) {
+        servo.write(angle);
+        delay(servoDelay);
+      }
+    }
   }
 
 }
