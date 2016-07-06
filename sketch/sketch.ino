@@ -16,7 +16,7 @@ const int pollingIntervalSec = 30;
 
 // サーボモーターの情報
 const int servoPin   = 12;
-const int servoDelay = 30;
+const int servoDelay = 20;
 const int repeatCount = 5;
 Servo servo;
 
@@ -102,17 +102,17 @@ void loop() {
   if (line.startsWith("{\"notification\":true}")) {
     if (!wasNotified) {
       Serial.println("The meeting will soon be over!");
-      wasNotified = true;
-      // サーボモーターを回転させてハトを出す x10
-      for (int i = 0; i < repeatCount; i++) {
-        for (int angle = 90; angle >= 20; angle--) {
-          servo.write(angle);
-          delay(servoDelay);
-        }
-        for (int angle = 20; angle <= 90; angle++) {
-          servo.write(angle);
-          delay(servoDelay);
-        }
+      for (int angle = 90; angle >= 20; angle--) {
+        servo.write(angle);
+        delay(servoDelay);
+      }
+    }
+    wasNotified = true;
+    // サーボモーターを回転させてハトを出す
+    for (int i = 0; i < repeatCount; i++) {
+      for (int angle = 20; angle <= 90; angle++) {
+        servo.write(angle);
+        delay(servoDelay);
       }
       for (int angle = 90; angle >= 20; angle--) {
         servo.write(angle);
